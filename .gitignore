@@ -3,3 +3,6 @@
 saved_data/
 experiments/
 data/
+
+antm/__pycache__
+antm.egg-info/

@@ -102,6 +102,8 @@ class ANTM:
             self.df_embedded = contextual_embedding(
                 self.df, mode=self.mode, device=self.device
             )
+            print("Saving embeds")
+            self.df_embedded.to_pickle(self.path + "/model/embedding_df")
         else:
             print("contextual document embedding provided ---> skip")
             self.df["embedded"] = self.embedding_vectors
@@ -151,6 +153,7 @@ class ANTM:
         self.dt, self.concat_cent = dt_creator(self.clustered_df_cent)
         print("Cluster Alignment Procedure is initialized...")
         self.df_tm = alignment_procedure(self.dt, self.concat_cent)
+        print("Plotting alignment")
         self.list_tm = plot_alignment(
             self.df_tm,
             self.umap_embeddings_visulization,
@@ -158,7 +161,9 @@ class ANTM:
             self.path,
             self.show_3d_plot,
         )
+        print("Getting documents per topic per time")
         self.documents_per_topic_per_time = rep_prep(self.cluster_df)
+        print("Processing text")
         self.tokens, self.dictionary, self.corpus = text_processing(
             self.df.content.values
         )
@@ -166,6 +171,7 @@ class ANTM:
         self.output = ctfidf_rp(
             self.dictionary,
             self.documents_per_topic_per_time,
+            self.cluster_df,
             num_doc=len(self.df),
             num_words=self.num_words,
         )
@@ -177,7 +183,7 @@ class ANTM:
         self.topics = [
             self.output[
                 self.output["slice_num"] == i
-            ].topic_representation.to_list()
+            ].topics_representations_ctf_idf.to_list()
             for i in self.slice_num
         ]
         self.topics = list(filter(None, self.topics))
@@ -189,6 +195,11 @@ class ANTM:
             os.mkdir(self.path + "/model")
 
         self.df_embedded.to_pickle(self.path + "/model/embedding_df")
+
+        print("Saving what I need")
+        self.documents_per_topic_per_time.to_pickle(
+            self.path + "/model/documents_per_topic_per_time"
+        )
 
         with open(self.path + "/model/slices", "wb") as fp:  # Pickling
             pickle.dump(self.slices, fp)
@@ -272,7 +283,7 @@ class ANTM:
         self.topics = [
             self.output[
                 self.output["slice_num"] == i
-            ].topic_representation.to_list()
+            ].topics_representations_ctf_idf.to_list()
             for i in range(1, self.slice_num + 1)
         ]
         return self.topics
@@ -286,8 +297,8 @@ class ANTM:
             win = int(float(random_element[i].split("-")[0]))
             t = self.output[self.output["slice_num"] == win]
             t = t[t["C"] == cl]
-            list_words.append(list(t.topic_representation)[0])
-            # print(list(t.topic_representation))
+            list_words.append(list(t.topics_representations_ctf_idf)[0])
+            # print(list(t.topics_representations_ctf_idf))
 
         plt.figure(figsize=(15, 10))
         for i in range(len(random_element)):
@@ -313,8 +324,8 @@ class ANTM:
                 win = int(float(random_element[i].split("-")[0]))
                 t = self.output[self.output["slice_num"] == win]
                 t = t[t["C"] == cl]
-                list_words.append(list(t.topic_representation)[0])
-                # print(list(t.topic_representation))
+                list_words.append(list(t.topics_representations_ctf_idf)[0])
+                # print(list(t.topics_representations_ctf_idf))
             fig = plt.figure(figsize=(15, 10))
             for i in range(len(random_element)):
                 cl = int(float(random_element[i].split("-")[1]))
