@@ -71,8 +71,7 @@ def ctfidf_rp(
     dictionary: Any,
     documents_per_topic_per_time: pd.DataFrame,
     cluster_df: List[pd.DataFrame],
-    azure_endpoint: str,
-    api_key: str,
+    openai_client,
     num_words: int = 10,
     num_doc: int = 10,
 ):
@@ -89,17 +88,11 @@ def ctfidf_rp(
         documents_per_topic_per_time.cluster, words, ctfidf, num_words
     )
 
-    # Step 3: OpenAI Client Setup
-    client = openai.AzureOpenAI(
-        azure_endpoint=azure_endpoint,
-        api_key=api_key,
-        api_version="2023-06-01-preview",
-    )
     openai_model = OpenAI(
-        client=client,
+        client=openai_client,
         chat=True,
         generator_kwargs={"model": "rs-gpt-3"},
-        model="gpt-3.5-turbo",
+        model="gpt-4o-mini",
     )
 
     clusters_df = pd.concat(cluster_df)
