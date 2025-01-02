@@ -32,6 +32,7 @@ class ANTM:
         df,
         overlap,
         window_length,
+        openai_client,
         mode="bert",
         umap_dimension_size=5,
         umap_n_neighbors=15,
@@ -94,6 +95,7 @@ class ANTM:
         self.periodwise_puw_diversity = None
         self.periodwise_pairwise_jaccard_diversity = None
         self.periodwise_topic_coherence = None
+        self.openai_client = openai_client
 
     def fit(self, save=True):
         # Contextual embedding
@@ -174,6 +176,7 @@ class ANTM:
             self.cluster_df,
             num_doc=len(self.df),
             num_words=self.num_words,
+            openai_client=self.openai_client
         )
         print("Topic Modeling is done")
         self.evolving_topics = topic_evolution(self.list_tm, self.output)
